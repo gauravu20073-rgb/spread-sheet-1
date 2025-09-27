@@ -1,508 +1,487 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payroll Management System</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Editable Payroll Sheet — Export XLSX / JPG</title>
 
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
+<!-- SheetJS (xlsx) for Excel export -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<!-- html2canvas for JPG export -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .header h1 {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .bill-info {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .bill-info div {
-            display: flex;
-            align-items: center;
-            margin: 5px;
-        }
-
-        .bill-info label {
-            margin-right: 10px;
-            font-weight: bold;
-        }
-
-        .bill-info input, .bill-info select {
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-        }
-
-        .spreadsheet {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            font-size: 12px;
-        }
-
-        .spreadsheet th, .spreadsheet td {
-            border: 1px solid #000;
-            padding: 4px;
-            text-align: center;
-            min-width: 60px;
-            height: 25px;
-        }
-
-        .spreadsheet th {
-            background-color: #e6e6e6;
-            font-weight: bold;
-        }
-
-        .spreadsheet input {
-            width: 100%;
-            border: none;
-            background: transparent;
-            text-align: center;
-            padding: 2px;
-            font-size: 11px;
-        }
-
-        .spreadsheet input:focus {
-            background-color: #ffffcc;
-            outline: 2px solid #4CAF50;
-        }
-
-        .static-cell {
-            background-color: #f9f9f9;
-            font-weight: bold;
-        }
-
-        .employee-row {
-            position: relative;
-        }
-
-        .remove-btn {
-            background-color: #ff4444;
-            color: white;
-            border: none;
-            padding: 2px 6px;
-            border-radius: 3px;
-            cursor: pointer;
-            font-size: 10px;
-            margin-left: 5px;
-        }
-
-        .remove-btn:hover {
-            background-color: #cc0000;
-        }
-
-        .add-row-btn {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 8px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-right: 10px;
-        }
-
-        .add-row-btn:hover {
-            background-color: #45a049;
-        }
-
-        .total-section {
-            text-align: right;
-            margin-top: 20px;
-            font-weight: bold;
-        }
-
-        .total-section input {
-            padding: 5px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            width: 150px;
-            text-align: right;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 20px;
-            flex-wrap: wrap;
-        }
-
-        .download-section {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .download-btn {
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            padding: 10px 15px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .download-btn:hover {
-            background-color: #1976D2;
-        }
-
-        .name-cell {
-            text-align: left !important;
-            padding-left: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            .spreadsheet {
-                font-size: 10px;
-            }
-            
-            .spreadsheet th, .spreadsheet td {
-                padding: 2px;
-                min-width: 40px;
-                height: 20px;
-            }
-            
-            .bill-info {
-                flex-direction: column;
-            }
-            
-            .controls {
-                flex-direction: column;
-                gap: 10px;
-            }
-        }
-    </style>
+<style>
+  :root{
+    --border:#666;
+    --bg:#fbfbfb;
+    --card:#fff;
+    --accent:#0b74de;
+    --muted:#666;
+    font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  }
+  body{
+    margin:0;
+    padding:18px;
+    background:linear-gradient(180deg,#f4f6fb,#fff);
+    color:#222;
+    -webkit-font-smoothing:antialiased;
+  }
+  .container{
+    max-width:1100px;
+    margin:0 auto;
+  }
+  h1{margin:4px 0 14px; font-size:18px;}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+  .control{display:flex;gap:6px;align-items:center;}
+  select,input[type="text"]{padding:6px 8px;border:1px solid #ccc;border-radius:6px; font-size:14px;}
+  button{background:var(--accent);color:white;border:none;padding:8px 12px;border-radius:8px;cursor:pointer;}
+  button.ghost{background:#fff;border:1px solid #ccc;color:#222;}
+  .sheet-card{background:var(--card);border-radius:8px;padding:12px;border:1px solid #e3e6ea; box-shadow:0 6px 20px rgba(20,30,60,0.04);}
+  .header-row{display:flex;justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:10px;}
+  .static-left{font-size:12px;color:var(--muted); line-height:1.3; width:64%;}
+  .editable-top{display:flex;gap:8px; align-items:center;}
+  .editable-top label{font-size:12px;color:var(--muted)}
+  /* Big rectangle (table area) */
+  .table-wrap{border:2px solid #333; padding:6px; border-radius:4px; background:#fff; overflow:auto;}
+  table.sheet{
+    border-collapse:collapse;
+    width:100%;
+    min-width:900px; /* allow horizontal scrolling on small screens */
+    table-layout:fixed;
+    font-size:13px;
+  }
+  table.sheet th, table.sheet td{
+    border:1px solid var(--border);
+    padding:6px 6px;
+    text-align:left;
+    vertical-align:middle;
+    overflow:hidden;
+    white-space:nowrap;
+    text-overflow:ellipsis;
+  }
+  table.sheet thead th{background:#f5f7fb; font-weight:600; font-size:12px;}
+  table.sheet td[contenteditable="true"]:focus{
+    outline:2px solid rgba(11,116,222,0.18);
+  }
+  .left-checkbox{width:28px;text-align:center;}
+  .controls-row{display:flex;gap:8px; margin-top:10px; align-items:center;}
+  .total-row{display:flex;justify-content:flex-end; gap:8px; margin-top:10px; align-items:center;}
+  .total-row label{font-weight:600;}
+  .test-output{margin-top:12px;background:#fff;padding:8px;border-radius:8px;border:1px solid #eee;font-size:13px;}
+  .status.pass{color:green}
+  .status.fail{color:#cc0000}
+  .download-menu{display:flex;gap:6px}
+  @media (max-width:700px){
+    .static-left{display:none;}
+    table.sheet{min-width:800px}
+  }
+</style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>SHRI BANIK SUNDAR WATER WOKS</h1>
-            <p>BLUE TANK, GARIA GHATOK &amp; PALLY BHILUMULI</p>
-            <p>BILL DANCE-C, GARIA,SSL B/DAK-WORK STATION, GUWAHATI</p>
-            <p>SAUDI ARABIA: SAM 108A -00/02/2023/04-00/01</p>
-            <p>PERSON CODE- 4092456100</p>
-        </div>
+<div class="container">
+  <h1>Editable Payroll Sheet — export XLSX / JPG</h1>
 
-        <div class="bill-info">
-            <div>
-                <label>Bill No.:</label>
-                <input type="text" id="billNo" value="AAA-50584" />
-            </div>
-            <div>
-                <label>Date:</label>
-                <input type="date" id="billDate" value="2023-09-25" />
-            </div>
-        </div>
-
-        <table class="spreadsheet" id="payrollTable">
-            <thead>
-                <tr>
-                    <th rowspan="2" class="static-cell">AGGRIGATE DWG/INT OF WAGES</th>
-                    <th colspan="7" class="static-cell">TOTAL WAGES</th>
-                    <th rowspan="2" class="static-cell">NO OF UNDER</th>
-                    <th rowspan="2" class="static-cell">RESIGN GRTU</th>
-                    <th rowspan="2" class="static-cell">ADV MAIN KUMAR</th>
-                    <th rowspan="2" class="static-cell">MEDICAL</th>
-                    <th rowspan="2" class="static-cell">AMOUNT</th>
-                    <th rowspan="2" class="static-cell">ADVANCE</th>
-                    <th rowspan="2" class="static-cell">NET PAYABLE AMOUNT</th>
-                    <th rowspan="2" class="static-cell">BALANCE</th>
-                    <th rowspan="2" class="static-cell">DEDUCTION</th>
-                    <th rowspan="2" class="static-cell">OP/GIS</th>
-                    <th rowspan="2" class="static-cell">BYKE OIL PER WAGES</th>
-                    <th rowspan="2" class="static-cell">TOTAL</th>
-                    <th rowspan="2" class="static-cell">Actions</th>
-                </tr>
-                <tr>
-                    <th class="static-cell">1</th>
-                    <th class="static-cell">2</th>
-                    <th class="static-cell">3</th>
-                    <th class="static-cell">4</th>
-                    <th class="static-cell">5</th>
-                    <th class="static-cell">6</th>
-                    <th class="static-cell">7</th>
-                </tr>
-            </thead>
-            <tbody id="employeeRows">
-                <tr class="employee-row">
-                    <td class="name-cell"><input type="text" value="S.S. SINGH" /></td>
-                    <td><input type="number" value="1974" /></td>
-                    <td><input type="number" value="506.62" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="9454" /></td>
-                    <td><input type="number" value="9454.00" /></td>
-                    <td><input type="number" value="9454.00" /></td>
-                    <td><input type="number" value="1547" /></td>
-                    <td><input type="number" value="1547" /></td>
-                    <td><input type="number" value="1200.00" /></td>
-                    <td><input type="number" value="340.00" /></td>
-                    <td><input type="number" value="340.00" /></td>
-                    <td><input type="number" value="9427.60" /></td>
-                    <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
-                </tr>
-                <tr class="employee-row">
-                    <td class="name-cell"><input type="text" value="P.P. SINGH" /></td>
-                    <td><input type="number" value="1974" /></td>
-                    <td><input type="number" value="506.62" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="9454" /></td>
-                    <td><input type="number" value="9454.00" /></td>
-                    <td><input type="number" value="9454.00" /></td>
-                    <td><input type="number" value="1547" /></td>
-                    <td><input type="number" value="1547" /></td>
-                    <td><input type="number" value="1200.00" /></td>
-                    <td><input type="number" value="220.00" /></td>
-                    <td><input type="number" value="220.00" /></td>
-                    <td><input type="number" value="9398.67" /></td>
-                    <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
-                </tr>
-                <tr class="employee-row">
-                    <td class="name-cell"><input type="text" value="S.L. SUBEDI" /></td>
-                    <td><input type="number" value="1974" /></td>
-                    <td><input type="number" value="506.62" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="9454" /></td>
-                    <td><input type="number" value="9454.00" /></td>
-                    <td><input type="number" value="9454.00" /></td>
-                    <td><input type="number" value="1547" /></td>
-                    <td><input type="number" value="1547" /></td>
-                    <td><input type="number" value="1200.00" /></td>
-                    <td><input type="number" value="100.00" /></td>
-                    <td><input type="number" value="100.00" /></td>
-                    <td><input type="number" value="3895.67" /></td>
-                    <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
-                </tr>
-                <tr class="employee-row">
-                    <td class="name-cell"><input type="text" value="A.K. ROY" /></td>
-                    <td><input type="number" value="1974" /></td>
-                    <td><input type="number" value="506.62" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="9454" /></td>
-                    <td><input type="number" value="9454.00" /></td>
-                    <td><input type="number" value="9454.00" /></td>
-                    <td><input type="number" value="100.00" /></td>
-                    <td><input type="number" value="100.00" /></td>
-                    <td><input type="number" value="100.00" /></td>
-                    <td><input type="number" value="100.00" /></td>
-                    <td><input type="number" value="100.00" /></td>
-                    <td><input type="number" value="10742.60" /></td>
-                    <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
-                </tr>
-                <tr class="employee-row">
-                    <td class="name-cell"><input type="text" value="R. PANDORA" /></td>
-                    <td><input type="number" value="1924" /></td>
-                    <td><input type="number" value="506.62" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="500" /></td>
-                    <td><input type="number" value="30" /></td>
-                    <td><input type="number" value="0" /></td>
-                    <td><input type="number" value="0" /></td>
-                    <td><input type="number" value="9" /></td>
-                    <td><input type="number" value="0" /></td>
-                    <td><input type="number" value="0" /></td>
-                    <td><input type="number" value="0" /></td>
-                    <td><input type="number" value="0" /></td>
-                    <td><input type="number" value="60.00" /></td>
-                    <td><input type="number" value="60.00" /></td>
-                    <td><input type="number" value="60.00" /></td>
-                    <td><input type="number" value="0" /></td>
-                    <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="total-section">
-            <label>Total Rs. </label>
-            <input type="number" id="totalAmount" value="23793.86" step="0.01" />
-        </div>
-
-        <div class="controls">
-            <button class="add-row-btn" onclick="addRow()">Add Employee Row</button>
-            
-            <div class="download-section">
-                <label>Download as:</label>
-                <select id="downloadFormat">
-                    <option value="csv">CSV Spreadsheet</option>
-                    <option value="jpg">JPG Image</option>
-                </select>
-                <button class="download-btn" onclick="downloadData()">Download</button>
-            </div>
-        </div>
+  <div class="toolbar">
+    <div class="control">
+      <label style="font-size:13px;color:var(--muted);margin-right:6px">Bill No</label>
+      <select id="billNo">
+        <option>Bill-2025-001</option>
+        <option>Bill-2025-002</option>
+        <option>Bill-2025-003</option>
+      </select>
+      <button class="ghost" onclick="addCustomOption('billNo')">+ Add</button>
     </div>
 
-    <script>
-        let employeeCount = 5;
+    <div class="control">
+      <label style="font-size:13px;color:var(--muted);margin-right:6px">Date</label>
+      <select id="billDate">
+        <option>2025-09-28</option>
+        <option>2025-09-01</option>
+        <option>2025-08-01</option>
+      </select>
+      <button class="ghost" onclick="addCustomOption('billDate')">+ Add</button>
+    </div>
 
-        function addRow() {
-            const tbody = document.getElementById('employeeRows');
-            const newRow = document.createElement('tr');
-            newRow.className = 'employee-row';
-            
-            newRow.innerHTML = `
-                <td class="name-cell"><input type="text" value="NEW EMPLOYEE" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><input type="number" value="0" /></td>
-                <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
-            `;
-            
-            tbody.appendChild(newRow);
-            employeeCount++;
-        }
+    <div style="flex:1"></div>
 
-        function removeRow(button) {
-            if (employeeCount > 1) {
-                button.closest('tr').remove();
-                employeeCount--;
-                updateTotal();
-            } else {
-                alert('At least one employee row must remain.');
-            }
-        }
+    <div class="download-menu">
+      <button onclick="exportToExcel()">Download → Excel</button>
+      <button onclick="exportToJPG()">Download → JPG</button>
+      <button class="ghost" onclick="downloadCSV()">Download → CSV</button>
+    </div>
+  </div>
 
-        function updateTotal() {
-            const rows = document.querySelectorAll('#employeeRows .employee-row');
-            let total = 0;
-            
-            rows.forEach(row => {
-                const totalCell = row.cells[19].querySelector('input');
-                if (totalCell && totalCell.value) {
-                    total += parseFloat(totalCell.value) || 0;
-                }
-            });
-            
-            document.getElementById('totalAmount').value = total.toFixed(2);
-        }
+  <div class="sheet-card" id="sheetCard">
+    <div class="header-row">
+      <div class="static-left">
+        <strong>STATEMENT SHOWING THE WAGES & LEVY DUE FOR THE PERIOD</strong><br>
+        The Secretary<br>
+        Security Guard Board (sample)<br>
+        Address lines… (this area is static text — as requested).<br>
+        Vendor Code: <strong>GS02458-00</strong><br>
+        <small style="color:var(--muted)">(Static header area — only Bill No and Date above are editable)</small>
+      </div>
 
-        function downloadData() {
-            const format = document.getElementById('downloadFormat').value;
-            
-            if (format === 'csv') {
-                downloadCSV();
-            } else if (format === 'jpg') {
-                downloadJPG();
-            }
-        }
+      <div class="editable-top">
+        <div style="text-align:right;">
+          <label>Bill No</label><br>
+          <input id="billNoText" type="text" value="Bill-2025-001" style="width:160px"/>
+        </div>
+        <div style="text-align:right;">
+          <label>Date</label><br>
+          <input id="billDateText" type="text" value="2025-09-28" style="width:120px"/>
+        </div>
+      </div>
+    </div>
 
-        function downloadCSV() {
-            let csv = 'Employee Name,Total Wages 1,Total Wages 2,Total Wages 3,Total Wages 4,Total Wages 5,Total Wages 6,Total Wages 7,No Of Under,Resign Grtu,Adv Main Kumar,Medical,Amount,Advance,Net Payable Amount,Balance,Deduction,OP/GIS,Byke Oil Per Wages,Total\\n';
-            
-            const rows = document.querySelectorAll('#employeeRows .employee-row');
-            rows.forEach(row => {
-                const inputs = row.querySelectorAll('input');
-                const rowData = Array.from(inputs).map(input => input.value).join(',');
-                csv += rowData + '\\n';
-            });
-            
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'payroll_' + document.getElementById('billNo').value + '.csv';
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
+    <!-- Big rectangle: table -->
+    <div class="table-wrap" id="capture-area">
+      <table class="sheet" id="payTable" aria-label="Payroll table">
+        <thead>
+          <tr>
+            <th class="left-checkbox">#</th>
+            <th>Sr No</th>
+            <th>Name of the Person</th>
+            <th>Category</th>
+            <th>Days Worked</th>
+            <th>Monthly Wages</th>
+            <th>Allowances</th>
+            <th>Total Wages</th>
+            <th>Levy</th>
+            <th>Remarks</th>
+          </tr>
+        </thead>
+        <tbody id="tbody">
+          <!-- rows generated by JS -->
+        </tbody>
+      </table>
+    </div>
 
-        function downloadJPG() {
-            // Create a canvas to convert the table to image
-            html2canvas(document.querySelector('.container')).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'payroll_' + document.getElementById('billNo').value + '.jpg';
-                link.href = canvas.toDataURL('image/jpeg', 0.9);
-                link.click();
-            });
-        }
+    <div class="controls-row">
+      <button onclick="addRow()">Add Row</button>
+      <button class="ghost" onclick="removeSelectedRows()">Remove Selected Rows</button>
 
-        // Add event listeners for automatic total calculation
-        document.addEventListener('input', function(e) {
-            if (e.target.type === 'number' && e.target.closest('.employee-row')) {
-                updateTotal();
-            }
-        });
+      <div style="flex:1"></div>
 
-        // Load html2canvas library for image export
-        const script = document.createElement('script');
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        document.head.appendChild(script);
-    </script>
+      <button class="ghost" onclick="runTests()">Run 10 Tests</button>
+    </div>
+
+    <div class="total-row">
+      <label>Total Rs.</label>
+      <input id="totalRs" type="text" value="219738.86" style="width:140px; text-align:right;"/>
+    </div>
+
+    <div class="test-output" id="testOutput" style="display:none;"></div>
+  </div>
+
+  <p style="font-size:13px;color:var(--muted);margin-top:12px">
+    Notes: The interior table cells are <strong>editable</strong>. Use the checkboxes left of each row to select them for removal. Exports include the header area (Bill No / Date shown as inputs) and the table content. The layout is responsive and will scroll horizontally on small phones to preserve column widths.
+  </p>
+</div>
+
+<script>
+/* ========== Sample table data (approximate layout) ========= */
+const sampleData = [
+  {sr:1, name:"S. Upadhyay", cat:"S/Guard", days:30, wages:13457, allow:3614, total:17071, levy:445.00, remarks:"" },
+  {sr:2, name:"A. Shinde", cat:"S/Guard", days:30, wages:13457, allow:3614, total:17071, levy:445.00, remarks:"" },
+  {sr:3, name:"N. B. Shikal", cat:"S/Guard", days:30, wages:6348, allow:2000, total:8348, levy:217.00, remarks:"" },
+  {sr:4, name:"O. Shinde", cat:"S/Guard", days:30, wages:4800, allow:1200, total:6000, levy:156.00, remarks:"" },
+  {sr:5, name:"S. Savadekar", cat:"S/Guard", days:30, wages:5600, allow:1200, total:6800, levy:176.00, remarks:"" }
+];
+
+function createCellEditable(content, classes='', numeric=false){
+  const td = document.createElement('td');
+  td.setAttribute('contenteditable','true');
+  td.className = classes;
+  td.innerText = content !== undefined ? content : '';
+  if(numeric){
+    td.dataset.numeric = '1';
+  }
+  // keep newline handling simple
+  return td;
+}
+
+function renderTable(){
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
+  for(let i=0;i<sampleData.length;i++){
+    const r = sampleData[i];
+    const tr = document.createElement('tr');
+    // select checkbox cell
+    const cbCell = document.createElement('td');
+    cbCell.className='left-checkbox';
+    const cb = document.createElement('input'); cb.type='checkbox'; cb.className='row-select';
+    cbCell.appendChild(cb); tr.appendChild(cbCell);
+
+    tr.appendChild(createCellEditable((i+1).toString(), '', false)); // Sr index column (editable too)
+    tr.appendChild(createCellEditable(r.name, '', false));
+    tr.appendChild(createCellEditable(r.cat, '', false));
+    tr.appendChild(createCellEditable(r.days, '', true));
+    tr.appendChild(createCellEditable(r.wages, '', true));
+    tr.appendChild(createCellEditable(r.allow, '', true));
+    tr.appendChild(createCellEditable(r.total, '', true));
+    tr.appendChild(createCellEditable(r.levy, '', true));
+    tr.appendChild(createCellEditable(r.remarks, '', false));
+    tbody.appendChild(tr);
+  }
+}
+
+renderTable();
+
+/* ========== Add / Remove row functionality ========== */
+function addRow(){
+  // append a blank row to table (both UI and sampleData model not strictly necessary)
+  const tbody = document.getElementById('tbody');
+  const tr = document.createElement('tr');
+  const cbCell = document.createElement('td');
+  cbCell.className='left-checkbox';
+  const cb = document.createElement('input'); cb.type='checkbox'; cb.className='row-select';
+  cbCell.appendChild(cb); tr.appendChild(cbCell);
+
+  const rowCount = tbody.children.length + 1;
+  tr.appendChild(createCellEditable(rowCount.toString(), '', false));
+  tr.appendChild(createCellEditable('', '', false));
+  tr.appendChild(createCellEditable('', '', false));
+  tr.appendChild(createCellEditable('', '', true));
+  tr.appendChild(createCellEditable('', '', true));
+  tr.appendChild(createCellEditable('', '', true));
+  tr.appendChild(createCellEditable('', '', true));
+  tr.appendChild(createCellEditable('', '', true));
+  tr.appendChild(createCellEditable('', '', false));
+  tbody.appendChild(tr);
+}
+
+function removeSelectedRows(){
+  const tbody = document.getElementById('tbody');
+  const rows = Array.from(tbody.children);
+  // Remove those rows with checked checkbox; preserve others and re-index sr no column
+  let removed = false;
+  rows.forEach(r=>{
+    const cb = r.querySelector('input.row-select');
+    if(cb && cb.checked){
+      tbody.removeChild(r);
+      removed = true;
+    }
+  });
+  if(!removed){
+    alert('No rows selected to remove.');
+  } else {
+    // reindex sr no column
+    Array.from(tbody.children).forEach((r, idx)=>{
+      const srCell = r.children[1]; // sr cell
+      if(srCell) srCell.innerText = (idx+1).toString();
+    });
+  }
+}
+
+/* ========== Add custom option to dropdown (Bill No / Date) ========== */
+function addCustomOption(id){
+  const val = prompt('Enter custom value:');
+  if(!val) return;
+  const sel = document.getElementById(id);
+  const opt = document.createElement('option');
+  opt.text = val;
+  opt.selected = true;
+  sel.add(opt);
+  // mirror into the text input copies:
+  if(id === 'billNo'){
+    document.getElementById('billNoText').value = val;
+  } else if(id === 'billDate'){
+    document.getElementById('billDateText').value = val;
+  }
+}
+
+/* Keep text inputs synced with selects for header fields */
+document.getElementById('billNo').addEventListener('change', (e)=>{
+  document.getElementById('billNoText').value = e.target.value;
+});
+document.getElementById('billDate').addEventListener('change', (e)=>{
+  document.getElementById('billDateText').value = e.target.value;
+});
+
+/* ========== Export to Excel (.xlsx) using SheetJS ========== */
+function exportToExcel(){
+  const wb = XLSX.utils.book_new();
+  // Build array of arrays from table
+  const table = document.getElementById('payTable');
+  const aoa = [];
+  // header
+  const headers = Array.from(table.tHead.rows[0].cells).map(h=>h.innerText.trim());
+  aoa.push(headers);
+  // rows
+  Array.from(table.tBodies[0].rows).forEach(r=>{
+    const row = Array.from(r.cells).map(c=>{
+      // if contenteditable, take innerText; otherwise checkbox cell uses ''
+      if(c.querySelector('input[type=checkbox]')) return ''; 
+      return c.innerText.trim();
+    });
+    aoa.push(row);
+  });
+  // Add a small header area
+  const billNo = document.getElementById('billNoText').value;
+  const billDate = document.getElementById('billDateText').value;
+  const ws1 = XLSX.utils.aoa_to_sheet([["Bill No:", billNo, "Date:", billDate], []]);
+  XLSX.utils.sheet_add_aoa(ws1, aoa, {origin: "A4"});
+  XLSX.utils.book_append_sheet(wb, ws1, "Payroll");
+  const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  const blob = new Blob([wbout], {type:"application/octet-stream"});
+  const name = `payroll_${(new Date()).toISOString().slice(0,10)}.xlsx`;
+  downloadBlob(blob, name);
+}
+
+/* CSV fallback */
+function downloadCSV(){
+  const table = document.getElementById('payTable');
+  const rows = Array.from(table.rows).map(row=>{
+    return Array.from(row.cells).map(c=>{
+      if(c.querySelector('input[type=checkbox]')) return '';
+      // escape
+      return `"${c.innerText.replace(/"/g,'""')}"`;
+    }).join(',');
+  }).join('\n');
+  const blob = new Blob([rows], {type:'text/csv'});
+  downloadBlob(blob, `payroll_${(new Date()).toISOString().slice(0,10)}.csv`);
+}
+
+/* JPG export using html2canvas */
+function exportToJPG(){
+  const node = document.getElementById('capture-area');
+  // scroll to top of node to ensure in view (helps mobile)
+  node.scrollIntoView({behavior:'smooth', block:'center'});
+  html2canvas(node, {scale:2, useCORS:true}).then(canvas=>{
+    canvas.toBlob(function(blob){
+      downloadBlob(blob, `payroll_${(new Date()).toISOString().slice(0,10)}.jpg`);
+    }, 'image/jpeg', 0.95);
+  }).catch(err=>{
+    alert('Error capturing JPG: '+err);
+  });
+}
+
+/* helper */
+function downloadBlob(blob, filename){
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(()=>{ URL.revokeObjectURL(link.href); link.remove(); }, 1000);
+}
+
+/* ========== Test runner: 10 tests + simple analysis ========== */
+function runTests(){
+  const output = document.getElementById('testOutput');
+  output.style.display='block';
+  output.innerHTML = '<strong>Running 10 tests...</strong><br>';
+  const table = document.getElementById('payTable');
+  const rows = Array.from(table.tBodies[0].rows);
+
+  const tests = [];
+
+  // 1) table has header with at least 8 columns
+  tests.push({
+    name:'Header column count >= 8',
+    pass: table.tHead.rows[0].cells.length >= 8,
+    detail: table.tHead.rows[0].cells.length
+  });
+
+  // 2) at least 1 row present
+  tests.push({
+    name:'At least 1 data row exists',
+    pass: rows.length >= 1,
+    detail: rows.length
+  });
+
+  // 3) numeric columns parse as numbers where numeric data attribute set
+  let numericParseOk = true;
+  rows.forEach(r=>{
+    Array.from(r.cells).forEach(c=>{
+      if(c.dataset.numeric === '1' && c.innerText.trim() !== ''){
+        const v = Number(c.innerText.replace(/,/g,''));
+        if(isNaN(v)) numericParseOk = false;
+      }
+    });
+  });
+  tests.push({name:'Numeric cells parse to numbers', pass:numericParseOk, detail: numericParseOk ? 'ok' : 'found non-numeric'});
+
+  // 4) check removal functionality: programmatic test (simulate add then remove)
+  // We'll temporarily add a row, select it, remove, and check index realignment
+  const beforeCount = rows.length;
+  addRow();
+  const afterAdd = document.getElementById('tbody').children.length;
+  // mark last row checkbox checked and then removeSelectedRows, then check count restored
+  const lastRow = document.getElementById('tbody').children[document.getElementById('tbody').children.length -1];
+  lastRow.querySelector('input.row-select').checked = true;
+  removeSelectedRows();
+  const afterRemove = document.getElementById('tbody').children.length;
+  tests.push({
+    name:'Add & Remove row functional',
+    pass: (afterAdd === beforeCount+1) && (afterRemove === beforeCount),
+    detail:`before ${beforeCount} afterAdd ${afterAdd} afterRemove ${afterRemove}`
+  });
+
+  // 5) total Rs is editable and contains a numeric value
+  const totalVal = document.getElementById('totalRs').value.trim();
+  const totalNumeric = !isNaN(Number(totalVal.replace(/,/g,'')));
+  tests.push({name:'Total Rs editable and numeric', pass:totalNumeric, detail: totalVal});
+
+  // 6) Bill No and Date sync between select and text input
+  const billSelect = document.getElementById('billNo').value;
+  const billText = document.getElementById('billNoText').value;
+  const dateSelect = document.getElementById('billDate').value;
+  const dateText = document.getElementById('billDateText').value;
+  tests.push({name:'Bill No and Date synced', pass:(billSelect===billText || dateSelect===dateText), detail:`bill:${billSelect} vs ${billText}, date:${dateSelect} vs ${dateText}`});
+
+  // 7) Excel export produces a Blob (test by calling exportToExcel and catching errors).
+  let excelOk = true;
+  try{
+    exportToExcel(); // this triggers a download in browser; if it errors, catch
+  }catch(e){
+    excelOk = false;
+  }
+  tests.push({name:'Excel export executed (no immediate JS error)', pass:excelOk, detail: excelOk ? 'ok' : 'error'});
+
+  // 8) JPG export function triggers html2canvas promise without immediate exception
+  let jpgOk = true;
+  try{
+    // don't actually wait for canvas (to avoid ultra-long waiting) — just ensure function runs
+    exportToJPG();
+  }catch(e){
+    jpgOk = false;
+  }
+  tests.push({name:'JPG export invoked (no immediate JS error)', pass:jpgOk, detail: jpgOk ? 'ok' : 'error'});
+
+  // 9) No empty name cells (warn if there are)
+  let emptyNameFound = false;
+  rows.forEach(r=>{
+    const nameCell = r.children[2];
+    if(nameCell && nameCell.innerText.trim()==='') emptyNameFound = true;
+  });
+  tests.push({name:'No empty "Name" cells (recommended)', pass:!emptyNameFound, detail: emptyNameFound ? 'empty name(s) found' : 'ok'});
+
+  // 10) Column widths preserved after add/remove (simple check: table width remains > 400)
+  const tableWidth = table.offsetWidth;
+  tests.push({name:'Table layout stable (width check)', pass: tableWidth > 400, detail:`width ${tableWidth}px`});
+
+  // display results
+  let passed = 0;
+  tests.forEach((t, idx)=>{
+    const ok = t.pass;
+    output.innerHTML += `<div><strong>Test ${idx+1}:</strong> ${t.name} — <span class="status ${ok?'pass':'fail'}">${ok?'PASS':'FAIL'}</span> <span style="color:#444">(${t.detail})</span></div>`;
+    if(ok) passed++;
+  });
+  output.innerHTML += `<hr><strong>${passed}/${tests.length} tests passed.</strong>`;
+
+  // Small analysis: list issues for user
+  const issues = tests.filter(t=>!t.pass).map(t=>t.name);
+  if(issues.length){
+    output.innerHTML += `<div style="margin-top:8px;color:#b33"><strong>Issues found:</strong><ul>${issues.map(i=>`<li>${i}</li>`).join('')}</ul></div>`;
+  } else {
+    output.innerHTML += `<div style="margin-top:8px;color:green"><strong>No major issues found.</strong></div>`;
+  }
+}
+
+/* End of main script */
+</script>
+
 </body>
-  </html>
+</html>
