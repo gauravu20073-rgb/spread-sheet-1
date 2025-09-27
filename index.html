@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll Management System</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .bill-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .bill-info div {
+            display: flex;
+            align-items: center;
+            margin: 5px;
+        }
+
+        .bill-info label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+
+        .bill-info input, .bill-info select {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+        }
+
+        .spreadsheet {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        .spreadsheet th, .spreadsheet td {
+            border: 1px solid #000;
+            padding: 4px;
+            text-align: center;
+            min-width: 60px;
+            height: 25px;
+        }
+
+        .spreadsheet th {
+            background-color: #e6e6e6;
+            font-weight: bold;
+        }
+
+        .spreadsheet input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: center;
+            padding: 2px;
+            font-size: 11px;
+        }
+
+        .spreadsheet input:focus {
+            background-color: #ffffcc;
+            outline: 2px solid #4CAF50;
+        }
+
+        .static-cell {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+
+        .employee-row {
+            position: relative;
+        }
+
+        .remove-btn {
+            background-color: #ff4444;
+            color: white;
+            border: none;
+            padding: 2px 6px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+
+        .remove-btn:hover {
+            background-color: #cc0000;
+        }
+
+        .add-row-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-right: 10px;
+        }
+
+        .add-row-btn:hover {
+            background-color: #45a049;
+        }
+
+        .total-section {
+            text-align: right;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .total-section input {
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            width: 150px;
+            text-align: right;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .download-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .download-btn {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .download-btn:hover {
+            background-color: #1976D2;
+        }
+
+        .name-cell {
+            text-align: left !important;
+            padding-left: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .spreadsheet {
+                font-size: 10px;
+            }
+            
+            .spreadsheet th, .spreadsheet td {
+                padding: 2px;
+                min-width: 40px;
+                height: 20px;
+            }
+            
+            .bill-info {
+                flex-direction: column;
+            }
+            
+            .controls {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SHRI BANIK SUNDAR WATER WOKS</h1>
+            <p>BLUE TANK, GARIA GHATOK &amp; PALLY BHILUMULI</p>
+            <p>BILL DANCE-C, GARIA,SSL B/DAK-WORK STATION, GUWAHATI</p>
+            <p>SAUDI ARABIA: SAM 108A -00/02/2023/04-00/01</p>
+            <p>PERSON CODE- 4092456100</p>
+        </div>
+
+        <div class="bill-info">
+            <div>
+                <label>Bill No.:</label>
+                <input type="text" id="billNo" value="AAA-50584" />
+            </div>
+            <div>
+                <label>Date:</label>
+                <input type="date" id="billDate" value="2023-09-25" />
+            </div>
+        </div>
+
+        <table class="spreadsheet" id="payrollTable">
+            <thead>
+                <tr>
+                    <th rowspan="2" class="static-cell">AGGRIGATE DWG/INT OF WAGES</th>
+                    <th colspan="7" class="static-cell">TOTAL WAGES</th>
+                    <th rowspan="2" class="static-cell">NO OF UNDER</th>
+                    <th rowspan="2" class="static-cell">RESIGN GRTU</th>
+                    <th rowspan="2" class="static-cell">ADV MAIN KUMAR</th>
+                    <th rowspan="2" class="static-cell">MEDICAL</th>
+                    <th rowspan="2" class="static-cell">AMOUNT</th>
+                    <th rowspan="2" class="static-cell">ADVANCE</th>
+                    <th rowspan="2" class="static-cell">NET PAYABLE AMOUNT</th>
+                    <th rowspan="2" class="static-cell">BALANCE</th>
+                    <th rowspan="2" class="static-cell">DEDUCTION</th>
+                    <th rowspan="2" class="static-cell">OP/GIS</th>
+                    <th rowspan="2" class="static-cell">BYKE OIL PER WAGES</th>
+                    <th rowspan="2" class="static-cell">TOTAL</th>
+                    <th rowspan="2" class="static-cell">Actions</th>
+                </tr>
+                <tr>
+                    <th class="static-cell">1</th>
+                    <th class="static-cell">2</th>
+                    <th class="static-cell">3</th>
+                    <th class="static-cell">4</th>
+                    <th class="static-cell">5</th>
+                    <th class="static-cell">6</th>
+                    <th class="static-cell">7</th>
+                </tr>
+            </thead>
+            <tbody id="employeeRows">
+                <tr class="employee-row">
+                    <td class="name-cell"><input type="text" value="S.S. SINGH" /></td>
+                    <td><input type="number" value="1974" /></td>
+                    <td><input type="number" value="506.62" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="9454" /></td>
+                    <td><input type="number" value="9454.00" /></td>
+                    <td><input type="number" value="9454.00" /></td>
+                    <td><input type="number" value="1547" /></td>
+                    <td><input type="number" value="1547" /></td>
+                    <td><input type="number" value="1200.00" /></td>
+                    <td><input type="number" value="340.00" /></td>
+                    <td><input type="number" value="340.00" /></td>
+                    <td><input type="number" value="9427.60" /></td>
+                    <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
+                </tr>
+                <tr class="employee-row">
+                    <td class="name-cell"><input type="text" value="P.P. SINGH" /></td>
+                    <td><input type="number" value="1974" /></td>
+                    <td><input type="number" value="506.62" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="9454" /></td>
+                    <td><input type="number" value="9454.00" /></td>
+                    <td><input type="number" value="9454.00" /></td>
+                    <td><input type="number" value="1547" /></td>
+                    <td><input type="number" value="1547" /></td>
+                    <td><input type="number" value="1200.00" /></td>
+                    <td><input type="number" value="220.00" /></td>
+                    <td><input type="number" value="220.00" /></td>
+                    <td><input type="number" value="9398.67" /></td>
+                    <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
+                </tr>
+                <tr class="employee-row">
+                    <td class="name-cell"><input type="text" value="S.L. SUBEDI" /></td>
+                    <td><input type="number" value="1974" /></td>
+                    <td><input type="number" value="506.62" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="9454" /></td>
+                    <td><input type="number" value="9454.00" /></td>
+                    <td><input type="number" value="9454.00" /></td>
+                    <td><input type="number" value="1547" /></td>
+                    <td><input type="number" value="1547" /></td>
+                    <td><input type="number" value="1200.00" /></td>
+                    <td><input type="number" value="100.00" /></td>
+                    <td><input type="number" value="100.00" /></td>
+                    <td><input type="number" value="3895.67" /></td>
+                    <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
+                </tr>
+                <tr class="employee-row">
+                    <td class="name-cell"><input type="text" value="A.K. ROY" /></td>
+                    <td><input type="number" value="1974" /></td>
+                    <td><input type="number" value="506.62" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="9454" /></td>
+                    <td><input type="number" value="9454.00" /></td>
+                    <td><input type="number" value="9454.00" /></td>
+                    <td><input type="number" value="100.00" /></td>
+                    <td><input type="number" value="100.00" /></td>
+                    <td><input type="number" value="100.00" /></td>
+                    <td><input type="number" value="100.00" /></td>
+                    <td><input type="number" value="100.00" /></td>
+                    <td><input type="number" value="10742.60" /></td>
+                    <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
+                </tr>
+                <tr class="employee-row">
+                    <td class="name-cell"><input type="text" value="R. PANDORA" /></td>
+                    <td><input type="number" value="1924" /></td>
+                    <td><input type="number" value="506.62" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="500" /></td>
+                    <td><input type="number" value="30" /></td>
+                    <td><input type="number" value="0" /></td>
+                    <td><input type="number" value="0" /></td>
+                    <td><input type="number" value="9" /></td>
+                    <td><input type="number" value="0" /></td>
+                    <td><input type="number" value="0" /></td>
+                    <td><input type="number" value="0" /></td>
+                    <td><input type="number" value="0" /></td>
+                    <td><input type="number" value="60.00" /></td>
+                    <td><input type="number" value="60.00" /></td>
+                    <td><input type="number" value="60.00" /></td>
+                    <td><input type="number" value="0" /></td>
+                    <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="total-section">
+            <label>Total Rs. </label>
+            <input type="number" id="totalAmount" value="23793.86" step="0.01" />
+        </div>
+
+        <div class="controls">
+            <button class="add-row-btn" onclick="addRow()">Add Employee Row</button>
+            
+            <div class="download-section">
+                <label>Download as:</label>
+                <select id="downloadFormat">
+                    <option value="csv">CSV Spreadsheet</option>
+                    <option value="jpg">JPG Image</option>
+                </select>
+                <button class="download-btn" onclick="downloadData()">Download</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let employeeCount = 5;
+
+        function addRow() {
+            const tbody = document.getElementById('employeeRows');
+            const newRow = document.createElement('tr');
+            newRow.className = 'employee-row';
+            
+            newRow.innerHTML = `
+                <td class="name-cell"><input type="text" value="NEW EMPLOYEE" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><input type="number" value="0" /></td>
+                <td><button class="remove-btn" onclick="removeRow(this)">×</button></td>
+            `;
+            
+            tbody.appendChild(newRow);
+            employeeCount++;
+        }
+
+        function removeRow(button) {
+            if (employeeCount > 1) {
+                button.closest('tr').remove();
+                employeeCount--;
+                updateTotal();
+            } else {
+                alert('At least one employee row must remain.');
+            }
+        }
+
+        function updateTotal() {
+            const rows = document.querySelectorAll('#employeeRows .employee-row');
+            let total = 0;
+            
+            rows.forEach(row => {
+                const totalCell = row.cells[19].querySelector('input');
+                if (totalCell && totalCell.value) {
+                    total += parseFloat(totalCell.value) || 0;
+                }
+            });
+            
+            document.getElementById('totalAmount').value = total.toFixed(2);
+        }
+
+        function downloadData() {
+            const format = document.getElementById('downloadFormat').value;
+            
+            if (format === 'csv') {
+                downloadCSV();
+            } else if (format === 'jpg') {
+                downloadJPG();
+            }
+        }
+
+        function downloadCSV() {
+            let csv = 'Employee Name,Total Wages 1,Total Wages 2,Total Wages 3,Total Wages 4,Total Wages 5,Total Wages 6,Total Wages 7,No Of Under,Resign Grtu,Adv Main Kumar,Medical,Amount,Advance,Net Payable Amount,Balance,Deduction,OP/GIS,Byke Oil Per Wages,Total\\n';
+            
+            const rows = document.querySelectorAll('#employeeRows .employee-row');
+            rows.forEach(row => {
+                const inputs = row.querySelectorAll('input');
+                const rowData = Array.from(inputs).map(input => input.value).join(',');
+                csv += rowData + '\\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'payroll_' + document.getElementById('billNo').value + '.csv';
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        function downloadJPG() {
+            // Create a canvas to convert the table to image
+            html2canvas(document.querySelector('.container')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'payroll_' + document.getElementById('billNo').value + '.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 0.9);
+                link.click();
+            });
+        }
+
+        // Add event listeners for automatic total calculation
+        document.addEventListener('input', function(e) {
+            if (e.target.type === 'number' && e.target.closest('.employee-row')) {
+                updateTotal();
+            }
+        });
+
+        // Load html2canvas library for image export
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        document.head.appendChild(script);
+    </script>
+</body>
+  </html>
